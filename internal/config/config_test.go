@@ -32,7 +32,7 @@ func TestConfig_Load(t *testing.T) {
 		},
 		{
 			name: "Override with envs",
-			args: []string{"-a", "localhost:8888", "-d", "host=local user=u password=p dbname=db", "-r", "localhost:8800", "-i", "2s", "-l", "20"},
+			args: []string{"-a", "localhost:8888"},
 			envVars: Config{
 				RunAddress: "localhost:8800",
 			},
