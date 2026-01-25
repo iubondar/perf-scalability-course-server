@@ -34,7 +34,7 @@ jobs:
         key: ${{ secrets.DEPLOY_SSH_KEY }}
         port: ${{ secrets.DEPLOY_PORT || 22 }}
         source: "perf-server-linux-*"
-        target: ${{ secrets.DEPLOY_PATH || '/local/perf-server' }}
+        target: /tmp
 
     - name: Deploy to server
       uses: appleboy/ssh-action@v1.0.3
@@ -59,11 +59,13 @@ jobs:
           
           # Создаём директорию для деплоя, если её нет
           DEPLOY_PATH="${DEPLOY_PATH:-/local/perf-server}"
-          mkdir -p $DEPLOY_PATH
+          sudo mkdir -p $DEPLOY_PATH
+          sudo chown perf-server:perf-server $DEPLOY_PATH
           
-          # Копируем новый бинарник
-          mv $DEPLOY_PATH/$BINARY_NAME $DEPLOY_PATH/perf-server
-          chmod +x $DEPLOY_PATH/perf-server
+          # Перемещаем бинарник из /tmp в целевую директорию с sudo
+          sudo mv /tmp/$BINARY_NAME $DEPLOY_PATH/perf-server
+          sudo chown perf-server:perf-server $DEPLOY_PATH/perf-server
+          sudo chmod +x $DEPLOY_PATH/perf-server
           
           # Перезапускаем сервис
           sudo systemctl daemon-reload
