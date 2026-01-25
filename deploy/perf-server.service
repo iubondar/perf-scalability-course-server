@@ -1,0 +1,31 @@
+[Unit]
+Description=Performance Scalability Course Server
+After=network.target
+
+[Service]
+Type=simple
+User=perf-server
+Group=perf-server
+WorkingDirectory=/local/perf-server
+ExecStart=/local/perf-server/perf-server
+Restart=always
+RestartSec=5
+TimeoutStopSec=10
+
+# Переменные окружения
+Environment="RUN_ADDRESS=:8080"
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=perf-server
+
+# Безопасность
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/local/perf-server
+
+[Install]
+WantedBy=multi-user.target

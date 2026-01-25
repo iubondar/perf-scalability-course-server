@@ -1,0 +1,74 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.25.1'
+
+    - name: Run tests
+      run: go test ./...
+
+    - name: Build binary
+      run: |
+        GOOS=linux GOARCH=amd64 go build -o perf-server-linux-amd64 ./cmd/server
+        GOOS=linux GOARCH=arm64 go build -o perf-server-linux-arm64 ./cmd/server
+
+    - name: Copy binaries to server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.DEPLOY_HOST }}
+        username: ${{ secrets.DEPLOY_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        port: ${{ secrets.DEPLOY_PORT || 22 }}
+        source: "perf-server-linux-*"
+        target: ${{ secrets.DEPLOY_PATH || '/local/perf-server' }}
+
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.3
+      env:
+        DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/local/perf-server' }}
+      with:
+        host: ${{ secrets.DEPLOY_HOST }}
+        username: ${{ secrets.DEPLOY_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        port: ${{ secrets.DEPLOY_PORT || 22 }}
+        script: |
+          # Определяем архитектуру
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "x86_64" ]; then
+            BINARY_NAME="perf-server-linux-amd64"
+          elif [ "$ARCH" = "aarch64" ]; then
+            BINARY_NAME="perf-server-linux-arm64"
+          else
+            echo "Unsupported architecture: $ARCH"
+            exit 1
+          fi
+          
+          # Создаём директорию для деплоя, если её нет
+          DEPLOY_PATH="${DEPLOY_PATH:-/local/perf-server}"
+          mkdir -p $DEPLOY_PATH
+          
+          # Копируем новый бинарник
+          mv $DEPLOY_PATH/$BINARY_NAME $DEPLOY_PATH/perf-server
+          chmod +x $DEPLOY_PATH/perf-server
+          
+          # Перезапускаем сервис
+          sudo systemctl daemon-reload
+          sudo systemctl restart perf-server
+          
+          # Проверяем статус
+          sleep 2
+          sudo systemctl status perf-server --no-pager || exit 1
