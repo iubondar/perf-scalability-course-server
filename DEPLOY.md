@@ -260,7 +260,7 @@ sudo systemctl start perf-server
 После деплоя проверьте, что сервер отвечает:
 
 ```bash
-curl http://your-vm.com:8080/
+curl http://your-vm.com:8080/hello
 ```
 
 Должен вернуться ответ: `Hello, World!`
@@ -274,7 +274,7 @@ server {
     listen 80;
     server_name your-domain.com;
 
-    location / {
+    location /hello {
         proxy_pass http://localhost:8080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

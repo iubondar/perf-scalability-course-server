@@ -9,7 +9,7 @@ func NewRouter() (chi.Router, error) {
 	router := chi.NewRouter()
 
 	helloWorldHandler := handler.NewHelloWorldHandler()
-	router.Get("/", helloWorldHandler.Handle)
+	router.Get("/hello", helloWorldHandler.Handle)
 
 	return router, nil
 }

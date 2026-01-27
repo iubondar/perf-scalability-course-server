@@ -84,7 +84,7 @@ Environment="RUN_ADDRESS=:8080"
 
 ## API Endpoints
 
-- `GET /` - Hello World handler (возвращает "Hello, World!")
+- `GET /hello` - Hello World handler (возвращает "Hello, World!")
 
 ## Тестирование
 
