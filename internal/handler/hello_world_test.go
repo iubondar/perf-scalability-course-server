@@ -23,6 +23,9 @@ func TestHelloWorldHandler_Handle(t *testing.T) {
 	h.Handle(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Equal(t, "Hello, World!", w.Body.String())
+	assert.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+	assert.Contains(t, w.Body.String(), "Hello")
+	assert.Contains(t, w.Body.String(), "World")
+	assert.Contains(t, w.Body.String(), "<!DOCTYPE html>")
 }
 

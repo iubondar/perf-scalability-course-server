@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello World</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+        }
+        h1 {
+            font-size: 4rem;
+            font-weight: 300;
+            color: #e94560;
+            text-shadow: 0 0 40px rgba(233, 69, 96, 0.4);
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+        .world {
+            color: #00d9ff;
+            text-shadow: 0 0 40px rgba(0, 217, 255, 0.4);
+        }
+        .subtitle {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+        .decoration {
+            margin: 1.5rem 0;
+            color: rgba(255,255,255,0.2);
+            font-size: 1.5rem;
+            letter-spacing: 0.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hello, <span class="world">World</span>!</h1>
+        <div class="decoration">* * *</div>
+        <p class="subtitle">Performance &amp; Scalability</p>
+    </div>
+</body>
+</html>
