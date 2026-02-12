@@ -8,12 +8,14 @@ import (
 )
 
 type Config struct {
-	RunAddress string `env:"RUN_ADDRESS"`
+	RunAddress  string `env:"RUN_ADDRESS"`
+	DatabaseDSN string `env:"DATABASE_DSN"`
 }
 
 // для локальной разработки
 const (
-	defaultRunAddress = "localhost:8000"
+	defaultRunAddress  = "localhost:8000"
+	defaultDatabaseDSN = "postgres://localhost:5432/perf?sslmode=disable"
 )
 
 func NewConfig(progname string, args []string) (*Config, error) {
@@ -24,6 +26,7 @@ func NewConfig(progname string, args []string) (*Config, error) {
 	flags := flag.NewFlagSet(progname, flag.ContinueOnError)
 
 	flags.StringVar(&c.RunAddress, "a", defaultRunAddress, "address to run server")
+	flags.StringVar(&c.DatabaseDSN, "d", defaultDatabaseDSN, "postgres connection DSN")
 
 	err := flags.Parse(args)
 	if err != nil {
@@ -39,6 +42,7 @@ func NewConfig(progname string, args []string) (*Config, error) {
 	zap.L().Sugar().Debugln(
 		"Config: ",
 		"RunAddress", c.RunAddress,
+		"DatabaseDSN", c.DatabaseDSN,
 	)
 
 	return &c, nil
