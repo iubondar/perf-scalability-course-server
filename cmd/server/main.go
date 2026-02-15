@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
 	"github.com/iubondar/perf-scalability-cource-server/internal/config"
 	"github.com/iubondar/perf-scalability-cource-server/internal/database"
+	"github.com/iubondar/perf-scalability-cource-server/internal/redis"
 	"github.com/iubondar/perf-scalability-cource-server/internal/router"
 	"github.com/iubondar/perf-scalability-cource-server/internal/server"
 	"go.uber.org/zap"
@@ -31,7 +33,17 @@ func main() {
 	}
 	defer pool.Close()
 
-	router, err := router.NewRouter(pool)
+	redisClient, err := redis.New(cfg.RedisAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer redisClient.Close()
+
+	if err := redis.SeedFromPG(context.Background(), redisClient, pool); err != nil {
+		log.Fatal(err)
+	}
+
+	router, err := router.NewRouter(pool, redisClient)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -10,12 +10,14 @@ import (
 type Config struct {
 	RunAddress  string `env:"RUN_ADDRESS"`
 	DatabaseDSN string `env:"DATABASE_DSN"`
+	RedisAddr   string `env:"REDIS_ADDR"`
 }
 
 // для локальной разработки
 const (
 	defaultRunAddress  = "localhost:8000"
 	defaultDatabaseDSN = "postgres://localhost:5432/perf?sslmode=disable"
+	defaultRedisAddr  = "localhost:6379"
 )
 
 func NewConfig(progname string, args []string) (*Config, error) {
@@ -27,6 +29,7 @@ func NewConfig(progname string, args []string) (*Config, error) {
 
 	flags.StringVar(&c.RunAddress, "a", defaultRunAddress, "address to run server")
 	flags.StringVar(&c.DatabaseDSN, "d", defaultDatabaseDSN, "postgres connection DSN")
+	flags.StringVar(&c.RedisAddr, "r", defaultRedisAddr, "redis address")
 
 	err := flags.Parse(args)
 	if err != nil {
@@ -43,6 +46,7 @@ func NewConfig(progname string, args []string) (*Config, error) {
 		"Config: ",
 		"RunAddress", c.RunAddress,
 		"DatabaseDSN", c.DatabaseDSN,
+		"RedisAddr", c.RedisAddr,
 	)
 
 	return &c, nil

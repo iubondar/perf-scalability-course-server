@@ -5,9 +5,10 @@ import (
 	"github.com/iubondar/perf-scalability-cource-server/internal/handlers"
 	"github.com/iubondar/perf-scalability-cource-server/internal/payload"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
-func NewRouter(pool *pgxpool.Pool) (chi.Router, error) {
+func NewRouter(pool *pgxpool.Pool, redisClient *redis.Client) (chi.Router, error) {
 	router := chi.NewRouter()
 
 	helloWorldHandler := handlers.NewHelloWorldHandler()
@@ -19,6 +20,7 @@ func NewRouter(pool *pgxpool.Pool) (chi.Router, error) {
 	router.Get("/payload", handlers.SleepHandler(cpuSleep, ioSleep))
 
 	router.Get("/pg", handlers.PgHandler(pool))
+	router.Get("/redis", handlers.RedisHandler(redisClient))
 
 	return router, nil
 }
