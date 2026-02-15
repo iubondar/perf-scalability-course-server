@@ -15,8 +15,11 @@ import (
 //go:embed migrations/*.sql
 var migrationsFS embed.FS
 
-// New creates a pgx connection pool and verifies connectivity.
+// New runs migrations and creates a pgx connection pool.
 func New(dsn string) (*pgxpool.Pool, error) {
+	if err := RunMigrations(dsn); err != nil {
+		return nil, err
+	}
 	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
 		return nil, err

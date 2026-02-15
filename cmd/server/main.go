@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"os"
 
@@ -23,25 +22,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := database.RunMigrations(cfg.DatabaseDSN); err != nil {
-		log.Fatal(err)
-	}
-
 	pool, err := database.New(cfg.DatabaseDSN)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer pool.Close()
 
-	redisClient, err := redis.New(cfg.RedisAddr)
+	redisClient, err := redis.New(cfg.RedisAddr, pool)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer redisClient.Close()
-
-	if err := redis.SeedFromPG(context.Background(), redisClient, pool); err != nil {
-		log.Fatal(err)
-	}
 
 	router, err := router.NewRouter(pool, redisClient)
 	if err != nil {
