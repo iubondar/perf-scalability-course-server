@@ -1,0 +1,31 @@
+[Unit]
+Description=Performance Scalability Course Server (instance %i)
+After=network.target
+
+[Service]
+Type=simple
+User=perf-server
+Group=perf-server
+WorkingDirectory=/local/perf-server
+ExecStart=/local/perf-server/perf-server
+Restart=always
+RestartSec=5
+TimeoutStopSec=10
+
+# Порт для каждого инстанса: 8080, 8081, 8082, ...
+Environment="RUN_ADDRESS=:808%i"
+
+# Логирование (SyslogIdentifier поддерживает %i)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=perf-server@%i
+
+# Безопасность
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/local/perf-server
+
+[Install]
+WantedBy=multi-user.target

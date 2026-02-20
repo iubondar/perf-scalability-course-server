@@ -76,7 +76,7 @@ sudo visudo
 Добавьте строку (замените `user` на вашего SSH-пользователя - того же, что будет в `DEPLOY_USER`):
 
 ```
-user ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload, /bin/systemctl restart perf-server, /bin/systemctl status perf-server
+user ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload, /bin/systemctl restart perf-server, /bin/systemctl restart perf-server@*, /bin/systemctl status perf-server, /bin/systemctl status perf-server@*
 ```
 
 **Примечание:** `DEPLOY_USER` - это тот же пользователь, с которым вы подключаетесь по SSH. Это не отдельный пользователь, а ваш обычный пользователь на VM (например, `ubuntu`, `deploy` или ваш личный пользователь).
@@ -265,16 +265,86 @@ curl http://your-vm.com:8080/hello
 
 Должен вернуться ответ: `Hello, World!`
 
+## Масштабирование воркеров (multi-instance)
+
+Для увеличения пропускной способности можно запустить несколько инстансов сервера за nginx с балансировкой нагрузки.
+
+### 1. Установка template unit
+
+Скопируйте template unit на VM:
+
+```bash
+scp deploy/perf-server@.service user@your-vm.com:/tmp/
+```
+
+На VM:
+
+```bash
+sudo cp /tmp/perf-server@.service /etc/systemd/system/
+sudo systemctl daemon-reload
+```
+
+### 2. Запуск нескольких воркеров
+
+Остановите одиночный инстанс (если был):
+
+```bash
+sudo systemctl stop perf-server
+sudo systemctl disable perf-server
+```
+
+Включите и запустите 4 воркера (порты 8080–8083):
+
+```bash
+sudo systemctl enable perf-server@0 perf-server@1 perf-server@2 perf-server@3
+sudo systemctl start perf-server@0 perf-server@1 perf-server@2 perf-server@3
+```
+
+Проверка статуса:
+
+```bash
+sudo systemctl status perf-server@0 perf-server@1 perf-server@2 perf-server@3
+```
+
+### 3. Управление инстансами
+
+```bash
+# Перезапуск всех воркеров
+sudo systemctl restart 'perf-server@*'
+
+# Логи конкретного инстанса
+sudo journalctl -u perf-server@0 -f
+
+# Добавить ещё один воркер (порт 8084)
+sudo systemctl enable perf-server@4
+sudo systemctl start perf-server@4
+```
+
 ## Интеграция с nginx (опционально)
 
-Если вы используете nginx как reverse proxy, пример конфигурации:
+Если вы используете nginx как reverse proxy, скопируйте конфиг:
+
+```bash
+scp deploy/nginx-perf-server.conf user@your-vm.com:/tmp/
+```
+
+На VM:
+
+```bash
+sudo cp /tmp/nginx-perf-server.conf /etc/nginx/sites-available/perf-server
+sudo ln -sf /etc/nginx/sites-available/perf-server /etc/nginx/sites-enabled/
+# Отредактируйте server_name при необходимости
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Конфиг `deploy/nginx-perf-server.conf` содержит upstream с балансировкой между портами 8080–8083. Для одиночного инстанса используйте упрощённый вариант:
 
 ```nginx
 server {
     listen 80;
     server_name your-domain.com;
 
-    location /hello {
+    location / {
         proxy_pass http://localhost:8080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

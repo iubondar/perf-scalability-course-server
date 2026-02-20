@@ -44,13 +44,13 @@ ssh ${USER}@${HOST} << EOF
     mv ${DEPLOY_PATH}/\$BINARY_NAME ${DEPLOY_PATH}/perf-server
     chmod +x ${DEPLOY_PATH}/perf-server
     
-    # Перезапускаем сервис
+    # Перезапускаем сервис (все инстансы при multi-instance setup)
     sudo systemctl daemon-reload
-    sudo systemctl restart perf-server
+    sudo systemctl restart 'perf-server@*' 2>/dev/null || sudo systemctl restart perf-server
     
     # Проверяем статус
     sleep 2
-    sudo systemctl status perf-server --no-pager || exit 1
+    sudo systemctl status 'perf-server@*' --no-pager 2>/dev/null || sudo systemctl status perf-server --no-pager || exit 1
     
     echo "Deployment completed successfully!"
 EOF
